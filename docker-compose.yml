@@ -1,0 +1,49 @@
+version: '3.7'
+services:
+  app:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8000
+    container_name: django_app_news
+    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - db
+  db:
+    container_name: postgres_db
+    image: postgres
+    restart: always
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=app_news
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    ports:
+      - "5432:5432"
+
+  
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=root@root.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - "5050:80"
+      
+  ngrok:
+      container_name: ngrok_app
+      image: wernight/ngrok:latest
+      ports:
+        - 4040:4040
+      environment:
+        NGROK_PROTOCOL: http
+        NGROK_PORT: app:8000
+        NGROK_AUTH :  ${NGROK_AUTH} 
+      depends_on:
+        - app
+      networks:
+        - default
